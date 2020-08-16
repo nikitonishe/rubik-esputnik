@@ -2,6 +2,7 @@
   "name": "rubik-esputnik",
   "version": "1.0.0",
   "main": "classes/Esputnik.js",
+  "repository": "git@github.com:nikitonishe/rubik-e.git",
   "author": "nikitandr <ns@indotech.ru>",
   "license": "MIT",
   "private": false,
