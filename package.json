@@ -1,6 +1,6 @@
 {
   "name": "rubik-esputnik",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "classes/Esputnik.js",
   "repository": "git@github.com:nikitonishe/rubik-e.git",
   "author": "nikitandr <ns@indotech.ru>",
