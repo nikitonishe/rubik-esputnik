@@ -1,5 +1,5 @@
 module.exports = {
-  host: 'https://esputnik.com/',
+  host: 'https://esputnik.com',
   version: 'v1',
   username: 'username',
   password: 'password',

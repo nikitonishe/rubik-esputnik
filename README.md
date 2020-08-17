@@ -69,8 +69,7 @@ const createResponse = await app.esputnik.addContact({
       test: 'test',
       gender: 'м',
       birthday: '1990-10-10'
-    },
-    id: 2,
+    }
   }]
 });
 ````

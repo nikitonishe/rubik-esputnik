@@ -39,7 +39,7 @@ class Esputnik extends Kubik {
     }
 
     // По умолчанию уникальность строится по id контакта
-    if (!options.dedupeOn) options.dedupeOn = 'id';
+    if (!options.dedupeOn) options.dedupeOn = 'email';
 
     // Автоматически формируем массивы обновляемых полей контакта и обновляемых
     // дополнительных полей
@@ -51,12 +51,12 @@ class Esputnik extends Kubik {
     });
 
     // Если массив обновляемых полей контакта не определен то подставляем автоматически сформированный
-    if (!(options.contactFields && options.contactFields.length)) {
+    if (!(options.contactFields && options.contactFields.length) && contactFields.length) {
       options.contactFields = Array.from(contactFields);
     }
 
     // Если массив обновляемых дополнительны полей не определен то подставляем автоматически сформированный
-    if (!(options.customFieldIds && options.customFieldIds.length)) {
+    if (!(options.customFieldIds && options.customFieldIds.length) && customFieldIds.length) {
       options.customFieldIds = Array.from(customFieldIds);
     }
 
