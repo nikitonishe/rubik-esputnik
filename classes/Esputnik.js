@@ -1,7 +1,9 @@
 const { Kubik } = require('rubik-main');
 const fetch = require('node-fetch');
+const set = require('lodash/set');
 
 const EsputnikError = require('../errors/Esputnik');
+const methods = require('./Esputnik/methods');
 
 const DEFAULT_HOST = 'https://esputnik.com';
 
@@ -25,6 +27,7 @@ class Esputnik extends Kubik {
     this.host = options.host || null;
 
     this.token = null;
+    this.methods.forEach(this.generateMethod, this);
   }
 
   /**
@@ -60,7 +63,7 @@ class Esputnik extends Kubik {
       options.customFieldIds = Array.from(customFieldIds);
     }
 
-    return this.makeReq({ path: 'contacts', method: 'POST', body: options });
+    return this.contacts(options);
   }
 
   /**
@@ -109,18 +112,33 @@ class Esputnik extends Kubik {
     return contact;
   }
 
-  async makeReq({ path, method, body }) {
+  /**
+   * Осуществляет запрос к Esputnik
+   * @param  {String}         path   Путь запроса
+   * @param  {String}         host   Хост. Если не указан будет взят из this
+   * @param  {String}         token  Токен. Если не указан будет взяn из this
+   * @param  {Object|String}  body   Тело запроса. Если объект, то преобразуется в JSON
+   * @param  {String}         method Метод запроса. Если не указан и есть тело то будет POST, а если тела нет то GET
+   * @param  {String}         id     id. Для некоторых методов в строке запроса указывается id пользователя
+   * @return {Promise}
+   */
+  async request({ path, host, token, body, method, id }) {
+    if (!token) token = this.token;
+
+    const headers = { 'Authorization': `Basic ${token}` };
+    if (body) {
+      if (!method) method = 'POST';
+      if (typeof(body) === 'object') {
+        body = JSON.stringify(body);
+        headers['Content-Type'] = 'application/json; charset=UTF-8';
+      }
+    }
     if (!method) method = 'GET';
 
-    const url = `${this.host}/api/${this.version}/${path}`;
-    if (method !== 'GET' && typeof(body) === 'object') body = JSON.stringify(body);
-    const headers = {
-      'Content-Type': 'application/json; charset=UTF-8',
-      'Authorization': `Basic ${this.token}`
-    }
-
+    const url = this.getUrl({ path, host, id });
     const res = await fetch(url, { method, body, headers });
 
+    // При статусе 400 и выше возвращается текст ошибки а не json
     if (+res.status > 399) {
       const errorText = await res.text();
       throw new EsputnikError(errorText);
@@ -133,6 +151,12 @@ class Esputnik extends Kubik {
     } catch (err) {
       return { result: resBody };
     }
+  }
+
+  getUrl({ path, host, id }) {
+    if (!host) host = this.host;
+    if (id) path = path.replace('{{id}}', id);
+    return `${host}/api/${this.version}/${path}`;
   }
 
   up({ config }) {
@@ -148,10 +172,30 @@ class Esputnik extends Kubik {
 
     this.token = Buffer.from(`${this.username}:${this.password}`).toString('base64')
   }
+
+  /**
+   * Сгенерировать метод API
+   *
+   * Создает функцию для запроса к API, привязывает ее к текущему контексту
+   * и кладет в семантичное имя внутри this.
+   * В итоге он разбирет путь на части, и раскладывает его по семантичным объектам:
+   * one/two/three -> this.one.two.three({});
+   * @param  {String}  path путь запроса, без ведущего /: one/two/three
+   */
+  generateMethod({ kubikName, apiName, method }) {
+    const apiMethod = (body, options) => {
+      if (!options) options = {};
+      const { host, token, id } = options;
+      return this.request({ path: apiName, body, method, host, token, id });
+    };
+    set(this, kubikName, apiMethod);
+  }
 }
 
-
-Esputnik.prototype.name = 'esputnik';
+// Чтобы не создавать при каждой инициализации класса,
+// пишем значения имени и зависимостей в протип
 Esputnik.prototype.dependencies = Object.freeze(['config']);
+Esputnik.prototype.methods = Object.freeze(methods);
+Esputnik.prototype.name = 'esputnik';
 
 module.exports = Esputnik;

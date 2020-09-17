@@ -36,7 +36,7 @@ describe('Кубик esputnik', () => {
     const { app, kubik } = get();
     await app.up();
 
-    const result = await kubik.makeReq({ path: 'account/info' });
+    const result = await kubik.account.info();
     expect(result).toBeTruthy();
     expect(result.userEmail).toBeTruthy();
     expect(result.organisationName).toBeTruthy();
@@ -72,11 +72,7 @@ describe('Кубик esputnik', () => {
     const { app, kubik } = get();
     await app.up();
 
-    await kubik.makeReq({
-      path: 'emails/unsubscribed/add',
-      method: 'POST',
-      body: { emails: [ 'ns@indotech.ru' ] }
-    })
+    await kubik.emails.unsubscribed.add({ emails: [ 'ns@indotech.ru' ] });
 
     await app.down();
   })
