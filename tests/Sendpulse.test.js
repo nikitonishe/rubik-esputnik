@@ -55,7 +55,7 @@ describe('Кубик esputnik', () => {
           value: 'ns1@indotech.ru',
         }],
         fields: {
-          test: 'test',
+          test: 'test23',
           gender: 'м',
           birthday: '1990-10-10'
         }

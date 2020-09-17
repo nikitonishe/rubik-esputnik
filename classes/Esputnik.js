@@ -54,12 +54,12 @@ class Esputnik extends Kubik {
     });
 
     // Если массив обновляемых полей контакта не определен то подставляем автоматически сформированный
-    if (!(options.contactFields && options.contactFields.length) && contactFields.length) {
+    if (!(options.contactFields && options.contactFields.length) && contactFields.size) {
       options.contactFields = Array.from(contactFields);
     }
 
     // Если массив обновляемых дополнительны полей не определен то подставляем автоматически сформированный
-    if (!(options.customFieldIds && options.customFieldIds.length) && customFieldIds.length) {
+    if (!(options.customFieldIds && options.customFieldIds.length) && customFieldIds.size) {
       options.customFieldIds = Array.from(customFieldIds);
     }
 
@@ -103,8 +103,8 @@ class Esputnik extends Kubik {
     // Формируем из объекта массив обновляемых полей с опорой на словарь из конфига
     for (const key of Object.keys(contact.fields)) {
       if (!dictionary[key]) continue;
-      customFieldIds.add(dictionary[key]);
-      parsedFields.push({ id: dictionary[key], value: contact.fields[key] });
+      customFieldIds.add(+dictionary[key]);
+      parsedFields.push({ id: +dictionary[key], value: contact.fields[key] });
     }
 
     contact.fields = parsedFields;
