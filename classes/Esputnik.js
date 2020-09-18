@@ -31,7 +31,7 @@ class Esputnik extends Kubik {
   }
 
   /**
-   * Добавляет контакт. Приводит contactFields, customFieldIds и fields внутри contact
+   * Добавляет контакт. Приводит contactFields, customFieldsIDs и fields внутри contact
    * к нужному виду. Остальные поля можно посмотреть в документации https://esputnik.com/api/el_ns0_contactsBulkUpdate.html
    * @param  {Object}  options Параметры контакта
    * @return {Object}          Ответ от апи
@@ -47,10 +47,10 @@ class Esputnik extends Kubik {
     // Автоматически формируем массивы обновляемых полей контакта и обновляемых
     // дополнительных полей
     const contactFields = new Set();
-    const customFieldIds = new Set();
+    const customFieldsIDs = new Set();
     const dictionary = this.dictionaries.default
     options.contacts = options.contacts.map(elem => {
-      return this.parseContact(elem, { dictionary, contactFields, customFieldIds });
+      return this.parseContact(elem, { dictionary, contactFields, customFieldsIDs });
     });
 
     // Если массив обновляемых полей контакта не определен то подставляем автоматически сформированный
@@ -59,29 +59,29 @@ class Esputnik extends Kubik {
     }
 
     // Если массив обновляемых дополнительны полей не определен то подставляем автоматически сформированный
-    if (!(options.customFieldIds && options.customFieldIds.length) && customFieldIds.size) {
-      options.customFieldIds = Array.from(customFieldIds);
+    if (!(options.customFieldsIDs && options.customFieldsIDs.length) && customFieldsIDs.size) {
+      options.customFieldsIDs = Array.from(customFieldsIDs);
     }
 
     return this.contacts(options);
   }
 
   /**
-   * Парсит контакт, автоматически дополняет contactFields и customFieldIds
+   * Парсит контакт, автоматически дополняет contactFields и customFieldsIDs
    * исходя из переданных полей контакта
    * @param  {Object} contact        Параметры контакта. fields можно передать в виде объекта
    * или в виде массива как показано в документации https://esputnik.com/api/el_ns0_contactsBulkUpdate.html
-   * customFieldIds и contactFields можно передать или они будут сгенерированы автоматически
+   * customFieldsIDs и contactFields можно передать или они будут сгенерированы автоматически
    * @param  {Object} dictionary     Словарь, которые используется для формирования
    *                                 fields если это поле было передано объектом
    * @param  {Set} contactFields     Set обновляемых полей контакта. Так как он один на несколько контактов,
    *                                 при парсинге каждого контакта его дополняем
-   * @param  {Set} customFieldIds    Set обновляемых дополнительных полей. Так как он один на несколько контактов.
+   * @param  {Set} customFieldsIDs    Set обновляемых дополнительных полей. Так как он один на несколько контактов.
    *                                 при парсинге каждого контакта его дополняем
    * @return {Object}                Измененный контакт. Вообще объект меняется на месте,ъ
    *                                 поэтому можно и не возвращать
    */
-  parseContact(contact, { dictionary, contactFields, customFieldIds }) {
+  parseContact(contact, { dictionary, contactFields, customFieldsIDs }) {
     const allContactFields = [
       'firstName', 'lastName', 'address', 'email', 'sms', 'mobilepush', 'webpush',
       'contactKey', 'ordersInfo', 'town', 'region', 'postcode', 'languageCode',
@@ -103,7 +103,7 @@ class Esputnik extends Kubik {
     // Формируем из объекта массив обновляемых полей с опорой на словарь из конфига
     for (const key of Object.keys(contact.fields)) {
       if (!dictionary[key]) continue;
-      customFieldIds.add(+dictionary[key]);
+      customFieldsIDs.add(+dictionary[key]);
       parsedFields.push({ id: +dictionary[key], value: contact.fields[key] });
     }
 
@@ -138,14 +138,12 @@ class Esputnik extends Kubik {
     const url = this.getUrl({ path, host, id });
     const res = await fetch(url, { method, body, headers });
 
+    const resBody = await res.text();
+
     // При статусе 400 и выше возвращается текст ошибки а не json
-    if (+res.status > 399) {
-      const errorText = await res.text();
-      throw new EsputnikError(errorText);
-    }
+    if (+res.status > 399) throw new EsputnikError(resBody);
 
     // Иногда возвращается JSON иногда нет, а обрабатывать как то надо.
-    const resBody = await res.text();
     try {
       return JSON.parse(resBody);
     } catch (err) {

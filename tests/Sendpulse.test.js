@@ -52,14 +52,18 @@ describe('Кубик esputnik', () => {
       contacts: [{
         channels: [{
           type: 'email',
-          value: 'ns1@indotech.ru',
+          value: 'ns2@indotech.ru',
         }],
         fields: {
-          test: 'test23',
-          gender: 'м',
-          birthday: '1990-10-10'
+          registrationDate: '2020-09-18T11:25',
+          language: 'ru',
+          active: 'true',
+          wasPaid: 'free',
+          plan: 'free',
+          activeBots: 'true'
         }
-      }]
+      }],
+      restoreDeleted: true
     })
 
     expect(result).toBeTruthy();

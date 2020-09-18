@@ -6,9 +6,12 @@ module.exports = {
 
   dictionaries: {
     default: {
-      birthday: '157725',
-      gender: '157726',
-      test: '157938'
+      registrationDate: '161729',
+      language: '161730',
+      active: '161731',
+      wasPaid: '161732',
+      plan: '161733',
+      activeBots: '161736'
     }
   }
 };
